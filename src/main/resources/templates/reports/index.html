@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - Library Management System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<!-- Sidebar Fragment -->
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="main-wrapper">
+    <!-- Top Navbar Fragment -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="page-container">
+        <!-- Flash Alerts Fragment -->
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h3 class="fw-bold mb-1">Reports & Export Center</h3>
+                <p class="text-muted small mb-0">Generate inventory balances, circulation audits, and download CSV data spreadsheets</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:if="${activeTab == 'books'}" th:href="@{/reports/export/books}" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                    <i class="bi bi-download"></i> Export Books CSV
+                </a>
+                <a th:if="${activeTab == 'members'}" th:href="@{/reports/export/members}" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                    <i class="bi bi-download"></i> Export Members CSV
+                </a>
+                <a th:if="${activeTab == 'history' || activeTab == 'issued' || activeTab == 'overdue'}" th:href="@{/reports/export/transactions}" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                    <i class="bi bi-download"></i> Export Transactions CSV
+                </a>
+            </div>
+        </div>
+
+        <!-- Tab Navigation Bar -->
+        <ul class="nav nav-pills mb-4 bg-white p-2 rounded-3 border">
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'books' ? 'active bg-primary' : 'text-dark'}" th:href="@{/reports(tab='books')}">
+                    <i class="bi bi-book me-1"></i> Books & Stock
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'issued' ? 'active bg-primary' : 'text-dark'}" th:href="@{/reports(tab='issued')}">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Currently Issued
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'overdue' ? 'active bg-danger' : 'text-danger'}" th:href="@{/reports(tab='overdue')}">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Overdue Report
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'members' ? 'active bg-primary' : 'text-dark'}" th:href="@{/reports(tab='members')}">
+                    <i class="bi bi-people me-1"></i> Members Report
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'history' ? 'active bg-primary' : 'text-dark'}" th:href="@{/reports(tab='history')}">
+                    <i class="bi bi-clock-history me-1"></i> Circulation Audit
+                </a>
+            </li>
+        </ul>
+
+        <!-- Content Card: Display based on active tab -->
+        <div class="content-card">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <span th:if="${activeTab == 'books'}"><i class="bi bi-book text-primary me-2"></i>Books & Inventory Valuation</span>
+                    <span th:if="${activeTab == 'issued'}"><i class="bi bi-box-arrow-up-right text-primary me-2"></i>Active Borrower Loans</span>
+                    <span th:if="${activeTab == 'overdue'}"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Delinquent Overdue Loans</span>
+                    <span th:if="${activeTab == 'members'}"><i class="bi bi-people text-primary me-2"></i>Registered Member Roster</span>
+                    <span th:if="${activeTab == 'history'}"><i class="bi bi-clock-history text-primary me-2"></i>Full Circulation Audit History</span>
+                </h5>
+                <span class="badge bg-light text-muted border">
+                    <span th:text="${#lists.size(reportData)}">0</span> records
+                </span>
+            </div>
+
+            <div class="content-card-body p-0">
+                <!-- TAB 1: Books -->
+                <div th:if="${activeTab == 'books'}" class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>ISBN</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th class="text-center">Total Copies</th>
+                                <th class="text-center">Available</th>
+                                <th class="text-center">Issued</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${reportData}">
+                                <td class="font-monospace" th:text="${b.isbn}">ISBN</td>
+                                <td class="fw-bold" th:text="${b.title}">Title</td>
+                                <td th:text="${b.author}">Author</td>
+                                <td><span class="badge bg-light text-dark border" th:text="${b.category}">Cat</span></td>
+                                <td class="text-center" th:text="${b.totalCopies}">5</td>
+                                <td class="text-center text-success fw-bold" th:text="${b.availableCopies}">3</td>
+                                <td class="text-center text-primary fw-bold" th:text="${b.totalCopies - b.availableCopies}">2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- TAB 2: Issued Books & TAB 3: Overdue & TAB 5: History -->
+                <div th:if="${activeTab == 'issued' || activeTab == 'overdue' || activeTab == 'history'}" class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Txn Code</th>
+                                <th>Book Title</th>
+                                <th>Borrower Member</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                                <th th:if="${activeTab == 'overdue' || activeTab == 'history'}">Fine</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="t : ${reportData}">
+                                <td class="font-monospace" th:text="${t.transactionCode}">TXN</td>
+                                <td class="fw-bold" th:text="${t.book.title}">Book Title</td>
+                                <td>
+                                    <div class="fw-semibold" th:text="${t.member.fullName}">Member</div>
+                                    <small class="text-muted" th:text="${t.member.memberId}">MEM</small>
+                                </td>
+                                <td th:text="${t.issueDate}">2026-10-18</td>
+                                <td th:text="${t.dueDate}">2026-11-01</td>
+                                <td>
+                                    <span th:if="${t.returnDate != null}" th:text="${t.returnDate}">2026-10-25</span>
+                                    <span th:if="${t.returnDate == null}" class="badge bg-light text-muted border">Active</span>
+                                </td>
+                                <td>
+                                    <span th:if="${t.status.name() == 'ISSUED'}">
+                                        <span th:if="${t.isCurrentlyOverdue(today)}" class="badge bg-danger">Overdue</span>
+                                        <span th:unless="${t.isCurrentlyOverdue(today)}" class="badge bg-primary">Issued</span>
+                                    </span>
+                                    <span th:if="${t.status.name() == 'RETURNED'}" class="badge bg-success">Returned</span>
+                                </td>
+                                <td th:if="${activeTab == 'overdue' || activeTab == 'history'}">
+                                    <span th:if="${t.fineAmount != null && t.fineAmount > 0}" class="text-danger fw-semibold" th:text="${'$' + #numbers.formatDecimal(t.fineAmount, 1, 2)}">$5.00</span>
+                                    <span th:if="${t.fineAmount == null || t.fineAmount == 0}" class="text-muted">&mdash;</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- TAB 4: Members -->
+                <div th:if="${activeTab == 'members'}" class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Member ID</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Registered</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="m : ${reportData}">
+                                <td class="font-monospace fw-bold text-primary" th:text="${m.memberId}">MEM-1001</td>
+                                <td class="fw-bold" th:text="${m.fullName}">Name</td>
+                                <td th:text="${m.email}">Email</td>
+                                <td th:text="${m.phone}">Phone</td>
+                                <td th:text="${m.registrationDate}">2026-10-18</td>
+                                <td>
+                                    <span th:if="${m.status == 'ACTIVE'}" class="badge bg-success-subtle text-success">Active</span>
+                                    <span th:unless="${m.status == 'ACTIVE'}" class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

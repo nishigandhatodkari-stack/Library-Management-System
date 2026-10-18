@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header class="top-navbar" th:fragment="navbar">
+    <div class="d-flex align-items-center gap-3">
+        <button id="sidebarToggleBtn" class="btn btn-sm btn-outline-secondary d-lg-none" type="button">
+            <i class="bi bi-list fs-5"></i>
+        </button>
+        <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-calendar-event me-1"></i>
+            <span th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}">Date</span>
+        </span>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+        <div class="user-badge" sec:authorize="isAuthenticated()">
+            <div class="avatar-circle">
+                <span th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">U</span>
+            </div>
+            <div class="d-none d-sm-block text-start">
+                <div class="fw-semibold small" sec:authentication="name">User</div>
+                <div class="text-muted" style="font-size: 0.72rem;">
+                    <span sec:authorize="hasRole('ADMIN')">Administrator</span>
+                    <span sec:authorize="!hasRole('ADMIN')">Librarian</span>
+                </div>
+            </div>
+        </div>
+
+        <form th:action="@{/logout}" method="post" class="m-0">
+            <button type="submit" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="d-none d-sm-inline">Logout</span>
+            </button>
+        </form>
+    </div>
+</header>
+</body>
+</html>
